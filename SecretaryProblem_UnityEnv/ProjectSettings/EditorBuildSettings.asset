@@ -4,5 +4,11 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/SecretaryProblem_MonteCarlo.unity
+    guid: cfd1127a59989c646865a4444207f761
+  - enabled: 0
+    path: Assets/Scenes/SecretaryProblem_MAB.unity
+    guid: 1408f633fc6200b4484b394150bf9d5e
   m_configObjects: {}
