@@ -3,7 +3,7 @@ import numpy as np
 from mlagents_envs.environment import UnityEnvironment as UE                                    # 유니티 환경 Load
 from mlagents_envs.environment import ActionTuple 
 from mlagents_envs.side_channel.engine_configuration_channel import EngineConfigurationChannel  # 유니티 환경 엔진 설정 관리 클래스 (timescale 조절)
-from torch.utils.tensorboard import SummaryWriter
+# from torch.utils.tensorboard import SummaryWriter
 import random
 import math
 
@@ -19,7 +19,7 @@ engine_configuration_channel.set_configuration_parameters(time_scale=10.0)  # �
 decision_steps, terminal_steps = env.get_steps(behavior_name)               # 각각 decision을 request한 step정보, terminate된 step 정보           
 
 # monte carlo control을 위한 settings
-Q = np.zeros((10,10,2)) # (현재 면접자 순서, 현재 면접자의 지금까지 중 순위, action - pass of select)
+Q = np.zeros((10,10,2)) # (현재 면접자 순서, 현재 면접자의 지금까지 중 순위, action - pass or select)
 alpha = 0.01
 epsilon = 0.9
 
@@ -27,11 +27,7 @@ def epsilon_greedy():
   
   rand = np.random.random()
   if rand < epsilon:
-    action = random.random()
-    if action < 0.9 :
-      action = 1
-    else :
-      action = 0
+    action = random.randint(0,1)
   else:
     order = int(decision_steps.obs[0][0][1])
     ranking = int(decision_steps.obs[0][0][2])
@@ -64,12 +60,11 @@ def show_Q():
       col = row[col_idx]
       action = np.argmax(col)
       data[row_idx, col_idx] = action
-      print(f'{row_idx}번째 순서의 면접자가 {col_idx}의 순위인 경우 action')
     
   print(data)  
 
 # number of rounds
-num_rounds = 20000
+num_rounds = 100000
 
 for episode in range(num_rounds):
   env.reset()
