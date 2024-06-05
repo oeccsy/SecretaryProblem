@@ -7,6 +7,9 @@ from mlagents_envs.side_channel.engine_configuration_channel import EngineConfig
 import random
 import math
 
+import numpy as np
+np.bool = bool
+
 # Unity 환경 로드
 engine_configuration_channel = EngineConfigurationChannel()   # 유니티 엔진의 timescale을 조절할 채널
 env = UE(file_name='./SecretaryProblem_UnityEnv_Build/Case_MonteCarlo/SecretaryProblem_UnityEnv', seed=1, side_channels=[engine_configuration_channel])
