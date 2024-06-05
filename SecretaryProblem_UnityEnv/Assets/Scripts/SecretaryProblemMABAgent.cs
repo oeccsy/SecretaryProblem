@@ -2,11 +2,11 @@ using UnityEngine;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
 
-public class Secretary_Problem_Case_MAB_Agent : Agent
+public class SecretaryProblemMABAgent : Agent
 {
     [Header("Grid World")]
     // Secretary Grid
-    public Secretary_Grid secretaryGrid;
+    public SecretaryGrid secretaryGrid;
     
     [Header("Decision 진행 속도")]
     public float timeBetweenDecisionsAtInference;

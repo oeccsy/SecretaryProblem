@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Secretary_Grid : MonoBehaviour
+public class SecretaryGrid : MonoBehaviour
 {
     private Secretary[,] _secretaryGrid;
     private List<Secretary> _secretaryList;
