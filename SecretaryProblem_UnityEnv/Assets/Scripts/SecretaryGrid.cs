@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,12 +11,16 @@ public class SecretaryGrid : MonoBehaviour
     private int rowCount;
     [SerializeField]
     private int colCount;
+
+    public Secretary bestSecretary;
+    public Secretary blinkTarget;
     
     private void Awake()
     {
         InitSecretaryGrid();
         InitSecretaryRanking();
         InitSecretaryRankingOnInterview();
+        InitBestSecretary();
     }
 
     private void InitSecretaryGrid()
@@ -87,6 +92,23 @@ public class SecretaryGrid : MonoBehaviour
             }
         }
     }
+    
+    public void InitBestSecretary()
+    {
+        foreach (var secretary in _secretaryList)
+        {
+            if (secretary.ranking == 1)
+            {
+                bestSecretary = secretary;
+                bestSecretary.SetMaterial(SecretaryProblemSettings.Instance.bestSecretaryMat);
+            }
+            else
+            {
+                if (blinkTarget != null && blinkTarget == secretary) continue;
+                secretary.SetMaterial(SecretaryProblemSettings.Instance.defaultSecretaryMat);
+            }
+        }
+    }
 
     public Secretary GetSecretary(int row, int col)
     {
@@ -106,5 +128,25 @@ public class SecretaryGrid : MonoBehaviour
     public int GetColCount()
     {
         return colCount;
+    }
+    
+    public IEnumerator NotifySuccess()
+    {
+        Secretary target = blinkTarget;
+        
+        target.SetMaterial(SecretaryProblemSettings.Instance.correctSecretaryMat);
+        yield return new WaitForSeconds(0.5f);
+        if (blinkTarget == bestSecretary) target.SetMaterial(SecretaryProblemSettings.Instance.bestSecretaryMat);
+        if (blinkTarget != bestSecretary) target.SetMaterial(SecretaryProblemSettings.Instance.defaultSecretaryMat);
+    }
+
+    public IEnumerator NotifyFail()
+    {
+        Secretary target = blinkTarget;
+        
+        target.SetMaterial(SecretaryProblemSettings.Instance.wrongSecretaryMat);
+        yield return new WaitForSeconds(0.5f);
+        if (blinkTarget == bestSecretary) target.SetMaterial(SecretaryProblemSettings.Instance.bestSecretaryMat);
+        if (blinkTarget != bestSecretary) target.SetMaterial(SecretaryProblemSettings.Instance.defaultSecretaryMat);
     }
 }

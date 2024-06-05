@@ -31,6 +31,7 @@ public class SecretaryProblemMonteCarloAgent : Agent
         
         secretaryGrid.InitSecretaryRanking();
         secretaryGrid.InitSecretaryRankingOnInterview();
+        secretaryGrid.InitBestSecretary();
         
         ResetAgent();
     }
@@ -70,11 +71,17 @@ public class SecretaryProblemMonteCarloAgent : Agent
 
                 if (selectedSecretary.ranking == 1)
                 {
+                    secretaryGrid.blinkTarget = selectedSecretary;
+                    StartCoroutine(secretaryGrid.NotifySuccess());
+                    
                     SetReward(1.0f);
                     EndEpisode();
                 }
                 else
                 {
+                    secretaryGrid.blinkTarget = selectedSecretary;
+                    StartCoroutine(secretaryGrid.NotifyFail());
+                    
                     SetReward(-1.0f);
                     EndEpisode();
                 }
@@ -84,6 +91,9 @@ public class SecretaryProblemMonteCarloAgent : Agent
                 // Pass : 더이상 움직일 수 없으면 -1로 종료, 아닌 경우 이동하여 계속 진행
                 if ((rowPos + 1) * (colPos + 1) == secretaryGrid.GetTotalSecretaryCount())
                 {
+                    secretaryGrid.blinkTarget = secretaryGrid.GetSecretary(rowPos, colPos);
+                    StartCoroutine(secretaryGrid.NotifyFail());
+                    
                     SetReward(-1.0f);
                     EndEpisode();
                 }
@@ -116,12 +126,12 @@ public class SecretaryProblemMonteCarloAgent : Agent
         
         discreteActionsOut[0] = 2; // default : pass
         
-        if (Input.GetKey(KeyCode.S))
+        if (Input.GetKeyDown(KeyCode.S))
         {
             Debug.Log("Select");
             discreteActionsOut[0] = 0;
         }
-        else if (Input.GetKey(KeyCode.P))
+        else if (Input.GetKeyDown(KeyCode.P))
         {
             Debug.Log("Pass");
             discreteActionsOut[0] = 1;
@@ -138,7 +148,7 @@ public class SecretaryProblemMonteCarloAgent : Agent
     }
 
     // action을 진행하는 주기를 결정하는 로직
-    public void FixedUpdate()
+    public void Update()
     {
         WaitTimeInference();
     }

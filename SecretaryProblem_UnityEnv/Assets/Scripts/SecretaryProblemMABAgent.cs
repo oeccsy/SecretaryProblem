@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
@@ -7,10 +8,9 @@ public class SecretaryProblemMABAgent : Agent
     [Header("Grid World")]
     // Secretary Grid
     public SecretaryGrid secretaryGrid;
-    
+
     [Header("Decision 진행 속도")]
-    public float timeBetweenDecisionsAtInference;
-    private float m_timeSinceDecision;
+    public float renderDelay;
 
     [Header("Agent Pos")]
     [SerializeField]
@@ -40,8 +40,10 @@ public class SecretaryProblemMABAgent : Agent
         
         secretaryGrid.InitSecretaryRanking();
         secretaryGrid.InitSecretaryRankingOnInterview();
-
+        secretaryGrid.InitBestSecretary();
+        
         ResetAgent();
+        RequestDecision();
     }
 
     //환경 정보를 관측 및 수집해 정책 결정을 위해 브레인에 전달하는 메소드
@@ -64,17 +66,31 @@ public class SecretaryProblemMABAgent : Agent
     public override void OnActionReceived(ActionBuffers actionBuffers)
     {
         Debug.Log($"OnActionReceived : {actionBuffers.DiscreteActions[0]}");
-
-        Secretary selectedSecretary = null;
+        
         int action = actionBuffers.DiscreteActions[0]; // 무조건 탈락시킬 면접자 수
+        StartCoroutine(ActionRoutine(action));
+    }
 
+    public IEnumerator ActionRoutine(int skipAmount)
+    {
+        Secretary selectedSecretary = null;
+        var delay = new WaitForSeconds(renderDelay);
+        
         for (int row = 0; row < secretaryGrid.GetRowCount(); row++)
         {
             for (int col = 0; col < secretaryGrid.GetColCount(); col++)
             {
+                // 이동
+                rowPos = row;
+                colPos = col;
+                transform.position = new Vector3(2 * col, -2 * row, 0);
+
+                yield return delay;
+                
                 // k명의 면접자는 무조건 탈락
-                if (row * secretaryGrid.GetRowCount() + col < action)
+                if (row * secretaryGrid.GetRowCount() + col < skipAmount)
                 {
+                    Debug.Log("Pass");
                     continue;
                 }
                 
@@ -82,25 +98,41 @@ public class SecretaryProblemMABAgent : Agent
                 Secretary curSecretary = secretaryGrid.GetSecretary(row, col);
                 if (curSecretary.rankingAfterInterview == 1)
                 {
+                    Debug.Log("Select");
                     selectedSecretary = curSecretary;
-                    transform.position = new Vector3(2 * col, -2 * row, 0);
                     break;
+                }
+                else
+                {
+                    Debug.Log("Pass");
                 }
             }
 
             if (selectedSecretary != null) break;
         }
 
-        if (selectedSecretary == null || selectedSecretary.ranking != 1)
+        if (selectedSecretary == null) selectedSecretary = secretaryGrid.GetSecretary(rowPos, colPos);
+        
+        if (selectedSecretary.ranking == 1)
         {
-            SetReward(-1.0f);
-            state = State.FailSelectBestSecretary;
-            EndEpisode();
-        }
-        else if (selectedSecretary.ranking == 1)
-        {
+            Debug.Log("Success");
             SetReward(1.0f);
             state = State.SelectBestSecretary;
+            
+            secretaryGrid.blinkTarget = selectedSecretary;
+            StartCoroutine(secretaryGrid.NotifySuccess());
+            
+            EndEpisode();
+        }
+        else
+        {
+            Debug.Log("Fail");
+            SetReward(-1.0f);
+            state = State.FailSelectBestSecretary;
+            
+            secretaryGrid.blinkTarget = selectedSecretary;
+            StartCoroutine(secretaryGrid.NotifyFail());
+            
             EndEpisode();
         }
     }
@@ -122,31 +154,5 @@ public class SecretaryProblemMABAgent : Agent
         rowPos = 0;
         colPos = 0;
         state = State.BeforeInterview;
-    }
-
-    // action을 진행하는 주기를 결정하는 로직
-    public void FixedUpdate()
-    {
-        WaitTimeInference();
-    }
-
-    void WaitTimeInference()
-    {
-        if (Academy.Instance.IsCommunicatorOn)
-        {
-            RequestDecision();    
-        }
-        else
-        {
-            if (m_timeSinceDecision >= timeBetweenDecisionsAtInference)
-            {
-                m_timeSinceDecision = 0f;
-                RequestDecision();
-            }
-            else
-            {
-                m_timeSinceDecision += Time.fixedDeltaTime;
-            }
-        }
     }
 }

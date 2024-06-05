@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.AssetImporters;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -11,4 +12,16 @@ public class Secretary : MonoBehaviour
 
     public int row;
     public int col;
+
+    private MeshRenderer _meshRenderer;
+
+    private void Awake()
+    {
+        _meshRenderer = GetComponent<MeshRenderer>();
+    }
+
+    public void SetMaterial(Material material)
+    {
+        _meshRenderer.material = material;
+    }
 }
