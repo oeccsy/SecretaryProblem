@@ -1,11 +1,6 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using UnityEngine;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
-
 
 public class SecretaryProblemMonteCarloAgent : Agent
 {
@@ -166,6 +161,5 @@ public class SecretaryProblemMonteCarloAgent : Agent
                 m_timeSinceDecision += Time.fixedDeltaTime;
             }
         }
-
     }
 }

@@ -54,7 +54,6 @@ public class SecretaryProblemMABAgent : Agent
         // state 1 면접 진행 후 best 찾음
         // state 2 면접 진행 후 best 못찾음
         
-        
         if (state == State.SelectBestSecretary || state == State.FailSelectBestSecretary)
         {
             Debug.Log(state.ToString());
@@ -76,7 +75,6 @@ public class SecretaryProblemMABAgent : Agent
                 // k명의 면접자는 무조건 탈락
                 if (row * secretaryGrid.GetRowCount() + col < action)
                 {
-                    // Debug.Log($"{row * secretaryGrid.GetRowCount() + col} 탈락!");
                     continue;
                 }
                 
@@ -84,7 +82,6 @@ public class SecretaryProblemMABAgent : Agent
                 Secretary curSecretary = secretaryGrid.GetSecretary(row, col);
                 if (curSecretary.rankingAfterInterview == 1)
                 {
-                    // Debug.Log($"발견! {row * secretaryGrid.GetRowCount() + col}");
                     selectedSecretary = curSecretary;
                     transform.position = new Vector3(2 * col, -2 * row, 0);
                     break;
@@ -114,8 +111,7 @@ public class SecretaryProblemMABAgent : Agent
         Debug.Log("Heuristic");
         var discreteActionsOut = actionsOut.DiscreteActions;
 
-        //discreteActionsOut[0] = (int)(secretaryGrid.GetTotalSecretaryCount() * 0.368f);
-        discreteActionsOut[0] = 37;
+        discreteActionsOut[0] = Mathf.RoundToInt(secretaryGrid.GetTotalSecretaryCount() * 0.368f);
     }
 
     // agent의 정보를 reset하는 로직
@@ -152,6 +148,5 @@ public class SecretaryProblemMABAgent : Agent
                 m_timeSinceDecision += Time.fixedDeltaTime;
             }
         }
-
     }
 }
