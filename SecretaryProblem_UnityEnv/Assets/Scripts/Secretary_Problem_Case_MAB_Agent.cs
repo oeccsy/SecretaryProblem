@@ -1,7 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using UnityEngine;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
@@ -86,7 +82,7 @@ public class Secretary_Problem_Case_MAB_Agent : Agent
                 
                 // 이후 등장한 면접자 중 가장 뛰어난 면접자를 발견하면 선택
                 Secretary curSecretary = secretaryGrid.GetSecretary(row, col);
-                if (curSecretary.ranking_on_interview == 1)
+                if (curSecretary.rankingAfterInterview == 1)
                 {
                     // Debug.Log($"발견! {row * secretaryGrid.GetRowCount() + col}");
                     selectedSecretary = curSecretary;
@@ -98,13 +94,13 @@ public class Secretary_Problem_Case_MAB_Agent : Agent
             if (selectedSecretary != null) break;
         }
 
-        if (selectedSecretary == null || selectedSecretary.real_ranking != 1)
+        if (selectedSecretary == null || selectedSecretary.ranking != 1)
         {
             SetReward(-1.0f);
             state = State.FailSelectBestSecretary;
             EndEpisode();
         }
-        else if (selectedSecretary.real_ranking == 1)
+        else if (selectedSecretary.ranking == 1)
         {
             SetReward(1.0f);
             state = State.SelectBestSecretary;

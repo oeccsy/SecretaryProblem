@@ -52,7 +52,7 @@ public class Secretary_Problem_Case_MonteCarlo_Agent : Agent
         int totalCheckCount = rowPos * secretaryGrid.GetRowCount() + colPos + 1;
 
         // 현재 면접자의 지금까지 면접자중의 순위 
-        int curSecretaryRanking = secretaryGrid.GetSecretary(rowPos, colPos).ranking_on_interview;
+        int curSecretaryRanking = secretaryGrid.GetSecretary(rowPos, colPos).rankingAfterInterview;
 
         // 관측 정보 전달
         sensor.AddObservation(totalSecretaryCount);     // 지원자 총원 == n
@@ -73,7 +73,7 @@ public class Secretary_Problem_Case_MonteCarlo_Agent : Agent
                 // Select : 선택한 Secretary가 실제로 1순위인 경우 +1, 아닌 경우 -1로 종료
                 Secretary selectedSecretary = secretaryGrid.GetSecretary(rowPos, colPos);
 
-                if (selectedSecretary.real_ranking == 1)
+                if (selectedSecretary.ranking == 1)
                 {
                     SetReward(1.0f);
                     EndEpisode();
