@@ -90,7 +90,7 @@ public class Secretary_Problem_Case_MAB_Agent : Agent
                 {
                     // Debug.Log($"발견! {row * secretaryGrid.GetRowCount() + col}");
                     selectedSecretary = curSecretary;
-                    transform.position = new Vector3(2 * col, -2 * row, -1);
+                    transform.position = new Vector3(2 * col, -2 * row, 0);
                     break;
                 }
             }
@@ -126,7 +126,7 @@ public class Secretary_Problem_Case_MAB_Agent : Agent
     public void ResetAgent()
     {
         // Agent Pos
-        transform.position = Vector3.back;
+        transform.position = Vector3.zero;
         rowPos = 0;
         colPos = 0;
         state = State.BeforeInterview;

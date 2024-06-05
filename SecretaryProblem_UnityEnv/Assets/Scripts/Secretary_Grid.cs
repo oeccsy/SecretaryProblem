@@ -36,7 +36,7 @@ public class Secretary_Grid : MonoBehaviour
         {
             for (int col = 0; col < colCount; col++)
             {
-                Secretary newSecretary = Instantiate(secretaryPrefab, new Vector3(2*col, -2*row, 0), Quaternion.identity, gridTransform).GetComponent<Secretary>();
+                Secretary newSecretary = Instantiate(secretaryPrefab, new Vector3(2*col, -2*row, -1), Quaternion.identity, gridTransform).GetComponent<Secretary>();
                 secretaryGrid[row, col] = newSecretary;
             }
         }

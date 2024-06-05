@@ -7,7 +7,7 @@ using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
 
 
-public class Secretary_Problem_Case_1_Agent : Agent
+public class Secretary_Problem_Case_MonteCarlo_Agent : Agent
 {
     [Header("Grid World")]
     // Secretary Grid
@@ -102,7 +102,7 @@ public class Secretary_Problem_Case_1_Agent : Agent
                     }
                     
                     // Agent 이동
-                    transform.position = new Vector3(2 * colPos, -2 * rowPos, -1);
+                    transform.position = new Vector3(2 * colPos, -2 * rowPos, 0);
                 }
                 
                 break;
@@ -137,7 +137,7 @@ public class Secretary_Problem_Case_1_Agent : Agent
     public void ResetAgent()
     {
         // Agent Pos
-        transform.position = Vector3.back;
+        transform.position = Vector3.zero;
         rowPos = 0;
         colPos = 0;
     }
