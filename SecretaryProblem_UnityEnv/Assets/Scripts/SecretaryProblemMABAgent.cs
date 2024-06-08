@@ -2,35 +2,27 @@ using System.Collections;
 using UnityEngine;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
+using UnityEngine.Serialization;
 
 public class SecretaryProblemMABAgent : Agent
 {
     [Header("Grid World")]
-    // Secretary Grid
     public SecretaryGrid secretaryGrid;
 
     [Header("Decision 진행 속도")]
     public float renderDelay;
-
+    
     [Header("Agent Pos")]
     [SerializeField]
     private int rowPos;                     // [0, secretaryGrid.GetRowCount)
     [SerializeField]
     private int colPos;                     // [0, secretaryGrid.GetColCount)
-
-    private enum State
-    {
-        BeforeInterview,
-        SelectBestSecretary,
-        FailSelectBestSecretary
-    }
-
-    private State state = State.BeforeInterview; 
     
     //초기화 작업을 위해 한번 호출되는 메소드
     public override void Initialize()
     {
         ResetAgent();
+        StartCoroutine(RequestDecisionRoutine());
     }
 
     //에피소드(학습단위)가 시작할때마다 호출
@@ -40,26 +32,16 @@ public class SecretaryProblemMABAgent : Agent
         
         secretaryGrid.InitSecretaryRanking();
         secretaryGrid.InitSecretaryRankingOnInterview();
-        secretaryGrid.InitBestSecretary();
+        secretaryGrid.InitSecretaryMat();
         
         ResetAgent();
-        RequestDecision();
     }
 
     //환경 정보를 관측 및 수집해 정책 결정을 위해 브레인에 전달하는 메소드
     public override void CollectObservations(Unity.MLAgents.Sensors.VectorSensor sensor)
     {
-        Debug.Log("CollectObservations");
-        
-        sensor.AddObservation((int)state);
-        // state 0 면접 진행 전
-        // state 1 면접 진행 후 best 찾음
-        // state 2 면접 진행 후 best 못찾음
-        
-        if (state == State.SelectBestSecretary || state == State.FailSelectBestSecretary)
-        {
-            Debug.Log(state.ToString());
-        }
+        // MAB는 관찰할 State가 존재하지 않음
+        // sensor.AddObservation(0);
     }
 
     //브레인으로 부터 전달받은 액션(행위)를 실행하는 메소드
@@ -67,73 +49,43 @@ public class SecretaryProblemMABAgent : Agent
     {
         Debug.Log($"OnActionReceived : {actionBuffers.DiscreteActions[0]}");
         
-        int action = actionBuffers.DiscreteActions[0]; // 무조건 탈락시킬 면접자 수
-        StartCoroutine(ActionRoutine(action));
-    }
-
-    public IEnumerator ActionRoutine(int skipAmount)
-    {
+        int skipAmount = actionBuffers.DiscreteActions[0];  // 무조건 탈락시킬 면접자 수
         Secretary selectedSecretary = null;
-        var delay = new WaitForSeconds(renderDelay);
         
-        for (int row = 0; row < secretaryGrid.GetRowCount(); row++)
+        for (int i = 0; i < secretaryGrid.GetTotalSecretaryCount(); i++)
         {
-            for (int col = 0; col < secretaryGrid.GetColCount(); col++)
+            // k명의 면접자는 무조건 탈락
+            if (i < skipAmount) continue;
+                
+            // 이전 면접자들보다 뛰어난 면접자를 발견하면 인터뷰 중단
+            Secretary interviewTarget = secretaryGrid.GetSecretary(i);
+            if (interviewTarget.rankingAfterInterview == 1)
             {
-                // 이동
-                rowPos = row;
-                colPos = col;
-                transform.position = new Vector3(2 * col, -2 * row, 0);
-
-                yield return delay;
-                
-                // k명의 면접자는 무조건 탈락
-                if (row * secretaryGrid.GetRowCount() + col < skipAmount)
-                {
-                    Debug.Log("Pass");
-                    continue;
-                }
-                
-                // 이후 등장한 면접자 중 가장 뛰어난 면접자를 발견하면 선택
-                Secretary curSecretary = secretaryGrid.GetSecretary(row, col);
-                if (curSecretary.rankingAfterInterview == 1)
-                {
-                    Debug.Log("Select");
-                    selectedSecretary = curSecretary;
-                    break;
-                }
-                else
-                {
-                    Debug.Log("Pass");
-                }
+                selectedSecretary = interviewTarget;
+                break;
             }
-
-            if (selectedSecretary != null) break;
         }
 
-        if (selectedSecretary == null) selectedSecretary = secretaryGrid.GetSecretary(rowPos, colPos);
+        if (selectedSecretary == null)
+        {
+            int row = secretaryGrid.GetRowCount() - 1;
+            int col = secretaryGrid.GetColCount() - 1;
+            selectedSecretary = secretaryGrid.GetSecretary(row, col);
+        }
+        
+        rowPos = selectedSecretary.row;
+        colPos = selectedSecretary.col;
+        transform.position = new Vector3(2 * colPos, -2 * rowPos, 0);
         
         if (selectedSecretary.ranking == 1)
         {
-            Debug.Log("Success");
+            selectedSecretary.SetMaterial(SecretaryProblemSettings.Instance.correctSecretaryMat);
             SetReward(1.0f);
-            state = State.SelectBestSecretary;
-            
-            secretaryGrid.blinkTarget = selectedSecretary;
-            StartCoroutine(secretaryGrid.NotifySuccess());
-            
-            EndEpisode();
         }
         else
         {
-            Debug.Log("Fail");
+            selectedSecretary.SetMaterial(SecretaryProblemSettings.Instance.wrongSecretaryMat);
             SetReward(-1.0f);
-            state = State.FailSelectBestSecretary;
-            
-            secretaryGrid.blinkTarget = selectedSecretary;
-            StartCoroutine(secretaryGrid.NotifyFail());
-            
-            EndEpisode();
         }
     }
 
@@ -147,12 +99,38 @@ public class SecretaryProblemMABAgent : Agent
     }
 
     // agent의 정보를 reset하는 로직
-    public void ResetAgent()
+    private void ResetAgent()
     {
         // Agent Pos
-        transform.position = Vector3.zero;
         rowPos = 0;
         colPos = 0;
-        state = State.BeforeInterview;
+        transform.position = new Vector3(2 * colPos, -2 * rowPos, 0);
+    }
+    
+    // action을 진행하는 주기를 결정하는 로직
+    private IEnumerator RequestDecisionRoutine()
+    {
+        if (Academy.Instance.IsCommunicatorOn)
+        {
+            while (true)
+            {
+                RequestDecision();
+                yield return null;
+                EndEpisode();
+                yield return null;
+            }
+        }
+        else
+        {
+            WaitForSeconds delay = new WaitForSeconds(renderDelay);
+            
+            while (true)
+            {
+                RequestDecision();
+                yield return delay;
+                EndEpisode();
+                yield return delay;
+            }
+        }
     }
 }
