@@ -18,6 +18,7 @@ public class SecretaryProblemMABAgent : Agent
     [SerializeField]
     private int colPos;                     // [0, secretaryGrid.GetColCount)
     
+    
     //초기화 작업을 위해 한번 호출되는 메소드
     public override void Initialize()
     {
@@ -41,7 +42,7 @@ public class SecretaryProblemMABAgent : Agent
     public override void CollectObservations(Unity.MLAgents.Sensors.VectorSensor sensor)
     {
         // MAB는 관찰할 State가 존재하지 않음
-        // sensor.AddObservation(0);
+        sensor.AddObservation(0);
     }
 
     //브레인으로 부터 전달받은 액션(행위)를 실행하는 메소드
@@ -116,7 +117,9 @@ public class SecretaryProblemMABAgent : Agent
             {
                 RequestDecision();
                 yield return null;
+                yield return null;
                 EndEpisode();
+                yield return null;
                 yield return null;
             }
         }
