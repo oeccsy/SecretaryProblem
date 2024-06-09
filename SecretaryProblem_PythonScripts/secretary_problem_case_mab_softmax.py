@@ -34,7 +34,7 @@ def softmax(tau):
     cumulative_prob += probs[i]
     if(cumulative_prob > threshold):
       return i
-    return np.argmax(probs)
+  return np.argmax(probs)
 
 # number of rounds
 num_rounds = 20000
