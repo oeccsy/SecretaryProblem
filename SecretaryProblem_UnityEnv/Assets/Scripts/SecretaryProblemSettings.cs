@@ -9,11 +9,11 @@ public class SecretaryProblemSettings : Singleton<SecretaryProblemSettings>
     public Material correctSecretaryMat;
     public Material wrongSecretaryMat;
 
-    private void Awake()
+    public void InitMaterialSettigns()
     {
         bestSecretaryMat = Resources.Load<Material>("Materials/SecretaryBest");
         defaultSecretaryMat = Resources.Load<Material>("Materials/SecretaryDefault");
-        
+
         correctSecretaryMat = Resources.Load<Material>("Materials/SecretaryCorrect");
         wrongSecretaryMat = Resources.Load<Material>("Materials/SecretaryWrong");
     }

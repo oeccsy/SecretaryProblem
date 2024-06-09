@@ -12,15 +12,7 @@ public class SecretaryGrid : MonoBehaviour
     [SerializeField]
     private int colCount;
 
-    private void Awake()
-    {
-        InitSecretaryGrid();
-        InitSecretaryRanking();
-        InitSecretaryRankingOnInterview();
-        InitSecretaryMat();
-    }
-
-    private void InitSecretaryGrid()
+    public void InitSecretaryGrid()
     {
         _secretaryGrid = new Secretary[rowCount,colCount];
         _secretaryList = new List<Secretary>();

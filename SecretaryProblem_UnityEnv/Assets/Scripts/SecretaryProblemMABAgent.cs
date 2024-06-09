@@ -1,8 +1,6 @@
-using System.Collections;
 using UnityEngine;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
-using UnityEngine.Serialization;
 
 public class SecretaryProblemMABAgent : Agent
 {
@@ -10,7 +8,8 @@ public class SecretaryProblemMABAgent : Agent
     public SecretaryGrid secretaryGrid;
 
     [Header("Decision 진행 속도")]
-    public float renderDelay;
+    public float timeBetweenDecisionsAtInference;
+    private float _timeSinceDecision;
     
     [Header("Agent Pos")]
     [SerializeField]
@@ -18,12 +17,18 @@ public class SecretaryProblemMABAgent : Agent
     [SerializeField]
     private int colPos;                     // [0, secretaryGrid.GetColCount)
     
-    
     //초기화 작업을 위해 한번 호출되는 메소드
     public override void Initialize()
     {
+        Debug.Log("Initialize");
+        SecretaryProblemSettings.Instance.InitMaterialSettigns();
+        
+        secretaryGrid.InitSecretaryGrid();
+        secretaryGrid.InitSecretaryRanking();
+        secretaryGrid.InitSecretaryRankingOnInterview();
+        secretaryGrid.InitSecretaryMat();
+        
         ResetAgent();
-        StartCoroutine(RequestDecisionRoutine());
     }
 
     //에피소드(학습단위)가 시작할때마다 호출
@@ -33,7 +38,6 @@ public class SecretaryProblemMABAgent : Agent
         
         secretaryGrid.InitSecretaryRanking();
         secretaryGrid.InitSecretaryRankingOnInterview();
-        secretaryGrid.InitSecretaryMat();
         
         ResetAgent();
     }
@@ -78,15 +82,19 @@ public class SecretaryProblemMABAgent : Agent
         colPos = selectedSecretary.col;
         transform.position = new Vector3(2 * colPos, -2 * rowPos, 0);
         
+        secretaryGrid.InitSecretaryMat();
+        
         if (selectedSecretary.ranking == 1)
         {
             selectedSecretary.SetMaterial(SecretaryProblemSettings.Instance.correctSecretaryMat);
             SetReward(1.0f);
+            EndEpisode();
         }
         else
         {
             selectedSecretary.SetMaterial(SecretaryProblemSettings.Instance.wrongSecretaryMat);
             SetReward(-1.0f);
+            EndEpisode();
         }
     }
 
@@ -105,34 +113,30 @@ public class SecretaryProblemMABAgent : Agent
         // Agent Pos
         rowPos = 0;
         colPos = 0;
-        transform.position = new Vector3(2 * colPos, -2 * rowPos, 0);
     }
     
     // action을 진행하는 주기를 결정하는 로직
-    private IEnumerator RequestDecisionRoutine()
+    private void Update()
+    {
+        WaitTimeInference();
+    }
+
+    private void WaitTimeInference()
     {
         if (Academy.Instance.IsCommunicatorOn)
         {
-            while (true)
-            {
-                RequestDecision();
-                yield return null;
-                yield return null;
-                EndEpisode();
-                yield return null;
-                yield return null;
-            }
+            RequestDecision();    
         }
         else
         {
-            WaitForSeconds delay = new WaitForSeconds(renderDelay);
-            
-            while (true)
+            if (_timeSinceDecision >= timeBetweenDecisionsAtInference)
             {
+                _timeSinceDecision = 0f;
                 RequestDecision();
-                yield return delay;
-                EndEpisode();
-                yield return delay;
+            }
+            else
+            {
+                _timeSinceDecision += Time.deltaTime;
             }
         }
     }
