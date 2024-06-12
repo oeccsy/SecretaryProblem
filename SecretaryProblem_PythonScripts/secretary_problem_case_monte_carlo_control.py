@@ -1,33 +1,29 @@
 import mlagents
 import numpy as np
+np.bool = bool
 from mlagents_envs.environment import UnityEnvironment as UE                                    # 유니티 환경 Load
 from mlagents_envs.environment import ActionTuple 
 from mlagents_envs.side_channel.engine_configuration_channel import EngineConfigurationChannel  # 유니티 환경 엔진 설정 관리 클래스 (timescale 조절)
 # from torch.utils.tensorboard import SummaryWriter
 import random
-import math
-
-import numpy as np
-np.bool = bool
 
 # Unity 환경 로드
 engine_configuration_channel = EngineConfigurationChannel()   # 유니티 엔진의 timescale을 조절할 채널
-env = UE(file_name='./SecretaryProblem_UnityEnv_Build/Case_MonteCarlo/SecretaryProblem_UnityEnv', seed=1, side_channels=[engine_configuration_channel])
+env = UE(file_name='./SecretaryProblem_UnityEnv_Build/Case_MonteCarlo_v4/SecretaryProblem_UnityEnv', seed=1, side_channels=[engine_configuration_channel])
 env.reset()
 
 # 유니티 브레인 설정 behavior (학습시킬 agent type) 불러오기
-behavior_name = list(env.behavior_specs.keys())[0] # "Case_1?team=0"
+behavior_name = list(env.behavior_specs.keys())[0]
 spec = env.behavior_specs[behavior_name]
 engine_configuration_channel.set_configuration_parameters(time_scale=10.0)  # 학습이 빨리 진행 될 수 있도록 10배속
 decision_steps, terminal_steps = env.get_steps(behavior_name)               # 각각 decision을 request한 step정보, terminate된 step 정보           
 
 # monte carlo control을 위한 settings
 Q = np.zeros((10,10,2)) # (현재 면접자 순서, 현재 면접자의 지금까지 중 순위, action - pass or select)
-alpha = 0.01
+alpha = 0.1
 epsilon = 0.9
 
 def epsilon_greedy():
-  
   rand = np.random.random()
   if rand < epsilon:
     action = random.randint(0,1)
@@ -46,8 +42,8 @@ def update_agent(history):
     order, ranking, a, r = transition
     
     # 몬테카를로 방식으로 업데이트
-    Q[order-1, ranking-1, a] = Q[order-1, ranking-1, a] + alpha * (cum_reward - Q[order-1, ranking-1, a])
     cum_reward = cum_reward + r
+    Q[order-1, ranking-1, a] = Q[order-1, ranking-1, a] + alpha * (cum_reward - Q[order-1, ranking-1, a])
     
 def anneal_eps():
   global epsilon
@@ -65,9 +61,10 @@ def show_Q():
       data[row_idx, col_idx] = action
     
   print(data)  
+  print(Q)
 
 # number of rounds
-num_rounds = 100000
+num_rounds = 300000
 
 for episode in range(num_rounds):
   env.reset()
@@ -111,8 +108,8 @@ for episode in range(num_rounds):
       done = True
     
     print(f'episode {episode} is done')
-    # 해당 에피소드에서의 history로 Agent 업데이트
-    
+  
+  # 해당 에피소드에서의 history로 Agent 업데이트  
   update_agent(history)
   anneal_eps()
   
