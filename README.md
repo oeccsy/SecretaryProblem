@@ -72,7 +72,7 @@ $$
 $$
 \begin{matrix}
 P_k(B) &=& \displaystyle\sum_{i=1}^{n} P_k(B|A=i)P_k(A=i) \\
-       &=& \displaystyle\sum_{i=1}^{k} 0 * \frac{1}{n} + \displaystyle\sum_{i=k+1}^{n} \frac{k}{i-1} * \frac{1}{n} \\
+       &=& \displaystyle\sum_{i=1}^{k} 0 \times \frac{1}{n} + \displaystyle\sum_{i=k+1}^{n} \frac{k}{i-1} \times \frac{1}{n} \\
        &=& \frac{k}{n}\displaystyle\sum_{i=k+1}^{n} \frac{1}{i-1}
 \end{matrix}
 $$
@@ -175,51 +175,65 @@ UCB를 적용한 방식은 Action의 가치를 잘 모르는 초기 학습 단�
 State만 주어지는 상황에서 강화학습을 적용하고 결과를 확인해보겠습니다.
 
 ### [환경 마련]
-우리는 다음과 같이 State를 정의하여 한 명식 순서대로 면접을 진행하는 환경을 마련할 수 있습니다.
+우리는 다음과 같이 State를 정의하여 한 명식 순서대로 면접을 진행하는 환경을 마련할 수 있습니다.  
 
 1. 지원자 총원 $n$
 2. 현재 면접을 보는 지원자를 포함하여 지금까지 면접을 진행한 인원 $[1,n]$
-3. 지금까지의 면접을 반영한 현재 지원자의 순위 [1,n]
+3. 지금까지의 면접을 반영한 현재 지원자의 순위 [1,n]  
 
 이때 지원자 총원은 모든 Episode에서 하나의 값으로 고정되기 때문에  
-실질적인 state는 $n * n = n^2$ 가지 입니다.
+실질적인 state는 $n \times n = n^2$ 가지 입니다.  
 
 면접관이 한 명의 지원자와 인터뷰를 진행하는 것을 1번의 step이라고 하면,  
-1번의 step에서 선택할 수 있는 Action은 다음 2가지로 정의할 수 있습니다.
+1번의 step에서 선택할 수 있는 Action은 다음 2가지로 정의할 수 있습니다.  
 
 1. Select : 해당 면접자를 고용하기로 결정합니다.  
-2. Pass : 해당 면접자를 고용하지 않기로 결정합니다.
+2. Pass : 해당 면접자를 고용하지 않기로 결정합니다.  
 
 Select를 선택하는 경우 이후의 면접은 진행하지 않고 terminate state로 상태가 전이됩니다.  
-지원자 중 가장 뛰어난 비서를 고용하게 된 경우 Reward +1, 아닌 경우 Reward +0 이 부여됩니다.
+지원자 중 가장 뛰어난 비서를 고용하게 된 경우 Reward +1, 아닌 경우 Reward +0 이 부여됩니다.  
 
 Pass를 선택하는 경우 다음 면접자의 인터뷰가 진행합니다.  
-만약 마지막 지원자까지 Pass 하는 경우 Reward +0이 부여됩니다.
+만약 마지막 지원자까지 Pass 하는 경우 Reward +0이 부여됩니다.  
+
+<div align="center">
+  <table>
+    <tr>
+      <th><img src="https://github.com/oeccsy/SecretaryProblem/assets/77562357/86ec660e-e835-4069-8f1e-738cbdf50993" width="500px" height="180px"/></th>
+    </tr>
+    <tr>
+      <td align="center">▲ $n=10$ 인 환경</td>
+    </tr>
+  </table>
+</div>
+
+$n$ 값이 너무 큰 경우 state가 너무 많아지기 때문에 $n=10$으로 하여 환경을 제작하였습니다.
+
 
 ### [Markov Decision Process]
 State와 Action에 대한 정의가 이뤄졌습니다. 그리고 해당 문제는 보상함수와 전이확률을 정의할 수 있습니다.  
 따라서 해당 문제는 MDP를 정의할 수 있습니다.  
 
-하지만 State만 주어지는 상황에서 직관적인 결과 확인을 위해 MDP를 모른다고 가정하고 프로젝트를 진행했습니다.
+하지만 State만 주어지는 상황에서 직관적인 결과 확인을 위해 MDP를 모른다고 가정하고 프로젝트를 진행했습니다.  
 
 
 ### [Monte Carlo Prediction]
 Prediction은 정책이 주어졌을 때 State의 Value를 평가하는 문제입니다.  
-하지만 현재 지원자의 순위가 1이고, 면접을 진행한 인원이 많을 수록 상태의 가치가 높다는 것은 직관적으로 알 수 있습니다.
+하지만 현재 지원자의 순위가 1이고, 면접을 진행한 인원이 많을 수록 상태의 가치가 높다는 것은 직관적으로 알 수 있습니다.  
 
-따라서 Prediction은 적용하지 않았습니다.
+따라서 Prediction은 적용하지 않았습니다.  
 
 
 ### [Monte Carlo Control]
-최적의 정책을 확인하기 위해 Control로 문제를 해결하였습니다.
+최적의 정책을 확인하기 위해 Control로 문제를 해결하였습니다.  
 
-Monte Carlo Control을 적용하기 위해 $Q$테이블을 운용했습니다.
-한 Episode의 경험을 쌓고, 경험한 데이터로 $Q(s,a)$ 테이블의 값을 업데이트 합니다.
+Monte Carlo Control을 적용하기 위해 $Q$테이블을 운용했습니다.  
+한 Episode의 경험을 쌓고, 경험한 데이터로 $Q(s,a)$ 테이블의 값을 업데이트 합니다.  
 
-epsilon greedy를 통해 확률적으로 Explore하도록 하고,
+epsilon greedy를 통해 확률적으로 Explore하도록 하고,  
 Exploit하는 경우 $Q(s,a)$ 테이블을 통해 Action을 선택합니다.  
 
-해당 과정의 결과로 얻은 정책의 결과물은 다음과 같습니다.
+해당 과정의 결과로 얻은 정책의 결과물은 다음과 같습니다.  
 
 <div align="center">
   <table>
