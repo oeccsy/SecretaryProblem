@@ -21,6 +21,14 @@ public class SecretaryProblemMonteCarloAgent : Agent
     //초기화 작업을 위해 한번 호출되는 메소드
     public override void Initialize()
     {
+        Debug.Log("Initialize");
+        SecretaryProblemSettings.Instance.InitMaterialSettigns();
+        
+        secretaryGrid.InitSecretaryGrid();
+        secretaryGrid.InitSecretaryRanking();
+        secretaryGrid.InitSecretaryRankingOnInterview();
+        secretaryGrid.InitSecretaryMat();
+        
         ResetAgent();
     }
 
@@ -76,16 +84,15 @@ public class SecretaryProblemMonteCarloAgent : Agent
                 }
                 else
                 {
-                    SetReward(-1.0f);
+                    SetReward(0.0f);
                     EndEpisode();
                 }
-                
                 break;
             case 1 :
                 // Pass : 더이상 움직일 수 없으면 -1로 종료, 아닌 경우 이동하여 계속 진행
                 if ((rowPos + 1) * (colPos + 1) == secretaryGrid.GetTotalSecretaryCount())
                 {
-                    SetReward(-1.0f);
+                    SetReward(0.0f);
                     EndEpisode();
                 }
                 else
@@ -100,7 +107,6 @@ public class SecretaryProblemMonteCarloAgent : Agent
                     // Agent 이동
                     transform.position = new Vector3(2 * colPos, -2 * rowPos, 0);
                 }
-                
                 break;
             case 2 :
                 // do nothing
@@ -117,12 +123,12 @@ public class SecretaryProblemMonteCarloAgent : Agent
         
         discreteActionsOut[0] = 2; // default : pass
         
-        if (Input.GetKeyDown(KeyCode.S))
+        if (Input.GetKey(KeyCode.S))
         {
             Debug.Log("Select");
             discreteActionsOut[0] = 0;
         }
-        else if (Input.GetKeyDown(KeyCode.P))
+        else if (Input.GetKey(KeyCode.P))
         {
             Debug.Log("Pass");
             discreteActionsOut[0] = 1;
@@ -139,12 +145,12 @@ public class SecretaryProblemMonteCarloAgent : Agent
     }
 
     // action을 진행하는 주기를 결정하는 로직
-    public void Update()
+    private void Update()
     {
         WaitTimeInference();
     }
 
-    void WaitTimeInference()
+    private void WaitTimeInference()
     {
         if (Academy.Instance.IsCommunicatorOn)
         {
@@ -159,7 +165,7 @@ public class SecretaryProblemMonteCarloAgent : Agent
             }
             else
             {
-                m_timeSinceDecision += Time.fixedDeltaTime;
+                m_timeSinceDecision += Time.deltaTime;
             }
         }
     }
