@@ -2,7 +2,7 @@ using UnityEngine;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
 
-public class SecretaryProblemMonteCarloAgent : Agent
+public class SecretaryProblemMonteCarloControlAgent : Agent
 {
     [Header("Grid World")]
     // Secretary Grid
