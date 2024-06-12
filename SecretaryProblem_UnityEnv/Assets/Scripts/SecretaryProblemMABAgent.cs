@@ -93,7 +93,7 @@ public class SecretaryProblemMABAgent : Agent
         else
         {
             selectedSecretary.SetMaterial(SecretaryProblemSettings.Instance.wrongSecretaryMat);
-            SetReward(-1.0f);
+            SetReward(0.0f);
             EndEpisode();
         }
     }
