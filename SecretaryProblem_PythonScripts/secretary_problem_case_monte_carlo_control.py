@@ -6,10 +6,19 @@ from mlagents_envs.environment import ActionTuple
 from mlagents_envs.side_channel.engine_configuration_channel import EngineConfigurationChannel  # 유니티 환경 엔진 설정 관리 클래스 (timescale 조절)
 # from torch.utils.tensorboard import SummaryWriter
 import random
+import zipfile
+import os
 
 # Unity 환경 로드
+dir_path = "./SecretaryProblem_UnityEnv_Build/Env_MonteCarloControl"
+file_name = "SecretaryProblem_UnityEnv.exe"
+
+if not os.path.isfile(os.path.join(dir_path, file_name)) :
+  with zipfile.ZipFile(dir_path + "/Env_MonteCarloControl.zip", 'r') as zip_ref:
+    zip_ref.extractall(dir_path)
+
 engine_configuration_channel = EngineConfigurationChannel()   # 유니티 엔진의 timescale을 조절할 채널
-env = UE(file_name='./SecretaryProblem_UnityEnv_Build/Case_MonteCarlo_v4/SecretaryProblem_UnityEnv', seed=1, side_channels=[engine_configuration_channel])
+env = UE(file_name=dir_path + "/" + file_name, seed=1, side_channels=[engine_configuration_channel])
 env.reset()
 
 # 유니티 브레인 설정 behavior (학습시킬 agent type) 불러오기
