@@ -65,7 +65,7 @@ $$
 
 <br>  
 
-최고의 지원자의 인터뷰 순서가 i (1<=i<=n) 일 각각의 확률은 $\frac{1}{n}$ 입니다.
+최고의 지원자의 인터뷰 순서가 $i (1 \leq i \leq n)$ 일 각각의 확률은 $\frac{1}{n}$ 입니다.
 
 따라서
 
@@ -86,7 +86,7 @@ $n$이 충분히 클 때 $P_k(B) = \frac{k}{n}\displaystyle\sum_{i=k+1}^{n} \fra
 $$
 \begin{matrix}
 P_k(B) &=& \frac{k}{n} \int_{k}^{n-1} \frac{1}{x}\, dx \\
-       &=& \frac{k}{n}(ln(n-1)-lnk) \\
+       &=& \frac{k}{n}(\ln(n-1)-lnk) \\
 \\
 \frac{d}{dk}P_k(B) &=& \frac{1}{n}(\ln(n-1)-lnk)-\frac{1}{n} \\
                    &=& \frac{1}{n}(\ln\frac{n-1}{k}-1)
@@ -126,8 +126,8 @@ $n$값은 100으로 하여 Action이 100가지, State는 1가지인 환경으로
 <div align="center">
   <table>
     <tr>
-      <th><img src="https://github.com/oeccsy/SecretaryProblem/assets/77562357/3c26a997-df2a-4cc2-aa50-094c2fc53f18" width="500px" height="300px"/></th>
-      <th><img src="https://github.com/oeccsy/SecretaryProblem/assets/77562357/c6206794-65e7-4ea7-909c-515365214026" width="500px" height="300px"/></th>
+      <th><img src="https://github.com/oeccsy/SecretaryProblem/assets/77562357/3c26a997-df2a-4cc2-aa50-094c2fc53f18" width="400px" height="250px"/></th>
+      <th><img src="https://github.com/oeccsy/SecretaryProblem/assets/77562357/c6206794-65e7-4ea7-909c-515365214026" width="400px" height="250px"/></th>
     </tr>
     <tr>
       <td align="center">▲ 면접관 (Agent) </td>
@@ -147,8 +147,8 @@ Agent는 k값에 따라 다음 Action을 수행합니다. $(1 \leq k \leq 100)$
 <div align="center">
   <table>
     <tr>
-      <th><img src="https://github.com/oeccsy/SecretaryProblem/assets/77562357/22ca4437-eaf8-4fd2-b5a2-4af813fe9ed4" width="500px" height="300px"/></th>
-      <th><img src="https://github.com/oeccsy/SecretaryProblem/assets/77562357/6c513f8d-1e7c-4916-9698-3e7cad27dd8b" width="500px" height="300px"/></th>
+      <th><img src="https://github.com/oeccsy/SecretaryProblem/assets/77562357/22ca4437-eaf8-4fd2-b5a2-4af813fe9ed4" width="480px" height="270px"/></th>
+      <th><img src="https://github.com/oeccsy/SecretaryProblem/assets/77562357/6c513f8d-1e7c-4916-9698-3e7cad27dd8b" width="480px" height="270px"/></th>
     </tr>
     <tr>
       <td align="center">▲ 성공</td>
@@ -162,13 +162,41 @@ Agent는 k값에 따라 다음 Action을 수행합니다. $(1 \leq k \leq 100)$
 ### [Epsilon-Greedy 방식 적용]
 Explore와 Exploit 사이의 Trade-Off로 인하여 항상 Exploit하지 않고,  
 일정 확률로 Explore 하여 0.5의 확률로 선택 가능한 모든 Action중 무작위로 하나를 선택하는 방식을 적용하였습니다.
-  
+
+<div align="center">
+  <table>
+    <tr>
+      <th><img src="https://github.com/user-attachments/assets/e2bfc76b-5fcc-40e6-82d3-e755a6a8a2c2" width="600px" height="150px"/></th>
+    </tr>
+  </table>
+</div>
+
 ### [Softmax 방식 적용]
 Softmax 함수를 통해 Action을 선택하여 가치가 높은 행동들에 대해 더 자주 탐색하도록 하였습니다.  
 
+<div align="center">
+  <table>
+    <tr>
+      <th><img src="https://github.com/oeccsy/SecretaryProblem/assets/77562357/646b3369-d70d-4347-a248-d602f2260d10" width="600px" height="150px"/></th>
+    </tr>
+  </table>
+</div>
+
 ### [Upper Confidence Bound 방식 적용]
 불확실성을 고려하여 신뢰구간에 따라 Action을 선택하도록 했습니다.  
-UCB를 적용한 방식은 Action의 가치를 잘 모르는 초기 학습 단계에서 특히 유용 했습니다.
+UCB를 적용한 방식은 Action의 가치를 잘 모르는 초기 학습 단계에서 자주 Explore 하는 모습을 보였습니다.
+
+<div align="center">
+  <table>
+    <tr>
+      <th><img src="https://github.com/user-attachments/assets/fb0d5b2e-6721-4d4f-bfd2-15c31d822a6b" width="600px" height="150px"/></th>
+    </tr>
+  </table>
+</div>
+
+
+각각의 방식들로 얻은 결과는 실제 최적해와 비교했을 때 일부 오차가 존재했습니다.  
+그러나 Q값이 Q[31]~Q[45] 부근에서 높은 값을 갖는 것을 확인할 수 있었습니다.
 
 ## 강화학습을 적용하여 최적 정책 확인하기
 이번에는 이미 수학적으로 증명한 최적 정책을 적용하지 않고,  
